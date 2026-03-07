@@ -4,6 +4,7 @@ import numpy as np
 import plotly.graph_objects as go
 import requests
 from datetime import datetime
+from io import StringIO  # 用Python原生StringIO
 
 st.set_page_config(
     page_title="智电未来 - 第四步",
@@ -11,14 +12,15 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("✅ 第四步 - 加载真实数据")
+st.title("✅ 第四步 - 加载真实数据（修正版）")
 
 @st.cache_data
 def load_csv_from_release(filename):
     url = f"https://github.com/lizixi1222/zhi-dian-dashboard/releases/download/v1.0-data/{filename}"
     try:
         response = requests.get(url, timeout=30)
-        df = pd.read_csv(pd.compat.StringIO(response.text))
+        # 用 Python 原生的 StringIO
+        df = pd.read_csv(StringIO(response.text))
         return df
     except Exception as e:
         st.error(f"加载 {filename} 失败: {e}")
@@ -35,6 +37,6 @@ valid_dfs = [df for df in [df1, df2, df3] if df is not None]
 if valid_dfs:
     df = pd.concat(valid_dfs, ignore_index=True)
     st.success(f"✅ 成功加载 {len(df):,} 条记录")
-    st.dataframe(df.head(10))  # 显示前10行
+    st.dataframe(df.head(10))
 else:
     st.error("没有加载到任何数据")
