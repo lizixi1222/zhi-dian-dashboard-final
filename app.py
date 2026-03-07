@@ -1,6 +1,6 @@
 """
 智电未来科技有限公司——公交场站运营数据看板
-双文件加载 + 30%采样 · 内存优化版
+单文件加载 + 10%采样 · 内存安全版
 """
 
 import streamlit as st
@@ -31,30 +31,25 @@ def load_csv_from_release(filename):
         df = pd.read_csv(StringIO(response.text))
         return df
     except Exception as e:
-        st.warning(f"⚠️ 加载 {filename} 失败: {e}")
+        st.error(f"❌ 加载 {filename} 失败: {e}")
         return None
 
 
 @st.cache_data(ttl=3600)
 def analyze_charging_data():
-    """分析充电数据生成场站指标（30%采样）"""
+    """分析充电数据生成场站指标（10%采样）"""
     
-    # 加载两个CSV文件（1和3）
-    df1 = load_csv_from_release("1_24_1_4.csv")
-    df3 = load_csv_from_release("3_24_1_4.csv")
+    # 只加载一个文件（1_24_1_4.csv）
+    df = load_csv_from_release("1_24_1_4.csv")
     
-    valid_dfs = [df for df in [df1, df3] if df is not None]
-    
-    if not valid_dfs:
-        st.error("❌ 无法加载任何CSV文件，请检查Release")
+    if df is None:
+        st.error("❌ 无法加载CSV文件，请检查Release")
         st.stop()
     
-    # 合并所有数据
-    df = pd.concat(valid_dfs, ignore_index=True)
     total_rows = len(df)
     
-    # 30%随机采样（保证内存安全）
-    df = df.sample(frac=0.3, random_state=42)
+    # 10%随机采样（确保内存安全）
+    df = df.sample(frac=0.1, random_state=42)
     sampled_rows = len(df)
     
     # 数据预处理
@@ -74,11 +69,11 @@ def analyze_charging_data():
     # 1. 今日充电量（取最后一天）
     last_date = df['date'].max()
     today_data = df[df['date'] == last_date]
-    today_energy = today_data['power_kw'].sum() * 0.25  # 15分钟间隔
+    today_energy = today_data['power_kw'].sum() * 0.25 if not today_data.empty else 0
     
     # 2. 平均日充电量
     daily_energy = df.groupby('date')['power_kw'].sum() * 0.25
-    avg_daily_energy = daily_energy.mean()
+    avg_daily_energy = daily_energy.mean() if not daily_energy.empty else 500
     
     # 3. 峰值负荷
     peak_load = df['power_kw'].max()
@@ -144,7 +139,7 @@ def analyze_charging_data():
         "hourly_load": hourly_load,
         
         # 状态
-        "data_source": f"CSV真实数据(30%采样, {sampled_rows:,}/{total_rows:,})"
+        "data_source": f"CSV真实数据(10%采样, {sampled_rows:,}/{total_rows:,})"
     }
     
     return station
