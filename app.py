@@ -47,10 +47,11 @@ def analyze_charging_data():
     """分析充电数据生成场站指标（Python 3.14优化）"""
     
     # 加载CSV文件
-    df1 = load_csv_from_release("2_24_1_4.csv")
-    df2 = load_csv_from_release("3_24_1_4.csv")
-    
-    valid_dfs = [df for df in [df1, df2] if df is not None]
+    df1 = load_csv_from_release("1_24_1_4.csv")
+df2 = load_csv_from_release("2_24_1_4.csv")
+df3 = load_csv_from_release("3_24_1_4.csv")
+
+valid_dfs = [df for df in [df1, df2, df3] if df is not None]
     
     if valid_dfs:
         df = pd.concat(valid_dfs, ignore_index=True)
