@@ -6,23 +6,23 @@ import requests
 from datetime import datetime
 
 st.set_page_config(
-    page_title="智电未来 - 测试",
+    page_title="智电未来 - 第三步",
     page_icon="⚡",
     layout="wide"
 )
 
-st.title("✅ 智电未来 - 第二步测试")
-st.write("基础框架加载成功")
+st.title("✅ 第三步 - 数据加载函数测试")
 
-# 简单的数据
-data = pd.DataFrame({
-    'x': [1,2,3,4,5],
-    'y': [10,20,15,25,30]
-})
+# 定义数据加载函数（先不调用）
+@st.cache_data
+def load_csv_from_release(filename):
+    url = f"https://github.com/lizixi1222/zhi-dian-dashboard/releases/download/v1.0-data/{filename}"
+    try:
+        response = requests.get(url, timeout=10)
+        df = pd.read_csv(pd.compat.StringIO(response.text))
+        return df
+    except Exception as e:
+        st.error(f"加载失败: {e}")
+        return None
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=data['x'], y=data['y'], mode='lines+markers'))
-st.plotly_chart(fig)
-
-if st.button("点击测试"):
-    st.balloons()
+st.success("函数定义成功，尚未调用")
