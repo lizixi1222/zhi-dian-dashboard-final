@@ -1,20 +1,40 @@
 import streamlit as st
-import requests
-from io import StringIO
+import sys
+import traceback
 
-st.set_page_config(page_title="测试", page_icon="✅")
+st.set_page_config(page_title="诊断模式", page_icon="🔍")
 
-st.title("✅ 极简测试页面")
+st.title("🔍 诊断模式 - 错误捕获")
 
 try:
-    # 只测试网络连接，不加载CSV
-    response = requests.get("https://www.baidu.com", timeout=5)
-    st.success(f"网络连接正常，状态码: {response.status_code}")
+    # 你的完整代码放在这里
+    import pandas as pd
+    import numpy as np
+    import plotly.graph_objects as go
+    import requests
+    from datetime import datetime
+    from io import StringIO
     
-    st.info("下一步将测试CSV下载...")
+    st.success("✅ 所有库导入成功")
     
+    # 测试网络连接
+    try:
+        r = requests.get("https://www.baidu.com", timeout=5)
+        st.success(f"✅ 网络正常: {r.status_code}")
+    except Exception as e:
+        st.error(f"❌ 网络错误: {e}")
+    
+    # 尝试加载CSV
+    try:
+        url = "https://github.com/lizixi1222/zhi-dian-dashboard/releases/download/v1.0-data/1_24_1_4.csv"
+        r = requests.get(url, timeout=10)
+        df = pd.read_csv(StringIO(r.text))
+        st.success(f"✅ CSV加载成功: {len(df)}行")
+        st.dataframe(df.head())
+    except Exception as e:
+        st.error(f"❌ CSV加载失败: {e}")
+        st.code(traceback.format_exc())
+        
 except Exception as e:
-    st.error(f"错误: {e}")
-
-if st.button("点击测试"):
-    st.balloons()
+    st.error(f"❌ 全局错误: {e}")
+    st.code(traceback.format_exc())
