@@ -3,6 +3,7 @@ import csv
 import requests
 from io import StringIO
 import os
+import traceback
 
 os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
 
@@ -18,28 +19,27 @@ try:
         response.raise_for_status()
     
     st.success("✅ 下载成功！")
+    st.write(f"文件大小: {len(response.text):,} 字符")
     
-    # 用 csv 模块读取
-    reader = csv.reader(StringIO(response.text))
+    # 显示前500个字符
+    st.text_area("文件开头预览", response.text[:500], height=200)
     
-    st.subheader("📋 前10行数据：")
-    
-    rows = []
-    for i, row in enumerate(reader):
-        if i >= 10:
-            break
-        rows.append(row)
-        st.write(f"**第{i+1}行:** {row}")
-    
-    st.subheader("📊 数据统计")
-    st.write(f"每行字段数: {[len(r) for r in rows]}")
-    
-    if rows:
-        st.subheader("🔍 猜测字段含义")
-        st.write("如果第一行是表头，那么列名应该是：")
-        st.code(rows[0])
+    # 尝试用 csv 模块读取
+    try:
+        reader = csv.reader(StringIO(response.text))
+        rows = []
+        for i, row in enumerate(reader):
+            if i >= 5:
+                break
+            rows.append(row)
+            st.write(f"第{i+1}行: {row}")
         
-        st.write("如果第一行是数据，那么列名需要手动指定")
+        st.write(f"每行列数: {[len(r) for r in rows]}")
+        
+    except Exception as e:
+        st.error(f"CSV解析错误: {e}")
+        st.code(traceback.format_exc())
     
 except Exception as e:
-    st.error(f"❌ 错误: {e}")
+    st.error(f"下载错误: {e}")
+    st.code(traceback.format_exc())
