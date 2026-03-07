@@ -2,12 +2,12 @@ import streamlit as st
 import sys
 import traceback
 
-st.set_page_config(page_title="诊断模式", page_icon="🔍")
+st.set_page_config(page_title="调试模式", page_icon="🔍")
 
-st.title("🔍 诊断模式 - 错误捕获")
+st.title("🔍 调试模式 - 查看错误")
 
 try:
-    # 你的完整代码放在这里
+    # 导入所有库
     import pandas as pd
     import numpy as np
     import plotly.graph_objects as go
@@ -17,7 +17,7 @@ try:
     
     st.success("✅ 所有库导入成功")
     
-    # 测试网络连接
+    # 测试网络
     try:
         r = requests.get("https://www.baidu.com", timeout=5)
         st.success(f"✅ 网络正常: {r.status_code}")
@@ -36,5 +36,5 @@ try:
         st.code(traceback.format_exc())
         
 except Exception as e:
-    st.error(f"❌ 全局错误: {e}")
+    st.error(f"❌ 致命错误: {e}")
     st.code(traceback.format_exc())
